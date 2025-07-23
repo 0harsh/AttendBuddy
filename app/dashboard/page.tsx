@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [courses, setCourses] = useState<
-    { id: string; name: string; attendance?: number }[]
+    { id: string; name: string; presents?: number; totalAttendance?: number }[]
   >([]);
 
   const filteredCourses = courses.filter((course) =>
@@ -64,7 +64,9 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow border hover:shadow-md transition cursor-pointer">
               <div className="text-lg font-medium">{course.name}</div>
               <div className="text-gray-600">
-                Attendance: {course.attendance ?? "N/A"}%
+                Attendance: {typeof course.presents === "number" && typeof course.totalAttendance === "number" && course.totalAttendance > 0
+                  ? `${Math.round((course.presents / course.totalAttendance) * 100)}%`
+                  : "N/A%"}
               </div>
             </div>
           </Link>

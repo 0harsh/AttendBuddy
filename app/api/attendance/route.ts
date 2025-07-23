@@ -45,27 +45,86 @@ export async function POST(req: Request) {
     }
 
     const userId = userPayload.userId;
+    const attendanceDate = new Date(date);
 
-    // ✅ Create or update attendance
-    const attendance = await prisma.attendance.upsert({
+    // Check if attendance already exists
+    const existingAttendance = await prisma.attendance.findUnique({
       where: {
         userId_courseId_date: {
           userId,
           courseId,
-          date: new Date(date),
+          date: attendanceDate,
         },
       },
-      create: {
-        userId,
-        courseId,
-        date: new Date(date),
-        status,
-      },
-      update: {
-        status,
-        updatedAt: new Date(),
-      },
     });
+
+    let attendance;
+
+    if (!existingAttendance) {
+      // Create new attendance and update course counters
+      [attendance] = await prisma.$transaction([
+        prisma.attendance.create({
+          data: {
+            userId,
+            courseId,
+            date: attendanceDate,
+            status,
+          },
+        }),
+        prisma.course.update({
+          where: { id: courseId },
+          data: {
+            totalAttendance: { increment: 1 },
+            ...(status === "Present" && { presents: { increment: 1 } }),
+            ...(status === "Absent" && { absents: { increment: 1 } }),
+          },
+        }),
+      ]);
+    } else {
+      // Update existing attendance
+      if (existingAttendance.status !== status) {
+        // Status changed, update counters
+        [attendance] = await prisma.$transaction([
+          prisma.attendance.update({
+            where: {
+              userId_courseId_date: {
+                userId,
+                courseId,
+                date: attendanceDate,
+              },
+            },
+            data: {
+              status,
+              updatedAt: new Date(),
+            },
+          }),
+          prisma.course.update({
+            where: { id: courseId },
+            data: {
+              ...(status === "Present" && { presents: { increment: 1 } }),
+              ...(status === "Absent" && { absents: { increment: 1 } }),
+              ...(existingAttendance.status === "Present" && status !== "Present" && { presents: { decrement: 1 } }),
+              ...(existingAttendance.status === "Absent" && status !== "Absent" && { absents: { decrement: 1 } }),
+            },
+          }),
+        ]);
+      } else {
+        // Status did not change, just update attendance
+        attendance = await prisma.attendance.update({
+          where: {
+            userId_courseId_date: {
+              userId,
+              courseId,
+              date: attendanceDate,
+            },
+          },
+          data: {
+            status,
+            updatedAt: new Date(),
+          },
+        });
+      }
+    }
 
     console.log("✅ Attendance marked:", attendance);
 
@@ -158,19 +217,50 @@ export async function DELETE(req: Request) {
     }
 
     const userId = userPayload.userId;
+    const attendanceDate = new Date(date);
 
-    const deleted = await prisma.attendance.deleteMany({
+    // Find the attendance record to know its status
+    const attendance = await prisma.attendance.findUnique({
       where: {
-        userId,
-        courseId,
-        date: new Date(date),
+        userId_courseId_date: {
+          userId,
+          courseId,
+          date: attendanceDate,
+        },
       },
     });
 
-    console.log(`✅ Deleted attendance for ${date}:`, deleted);
+    if (!attendance) {
+      return NextResponse.json(
+        { message: "Attendance record not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.$transaction([
+      prisma.attendance.delete({
+        where: {
+          userId_courseId_date: {
+            userId,
+            courseId,
+            date: attendanceDate,
+          },
+        },
+      }),
+      prisma.course.update({
+        where: { id: courseId },
+        data: {
+          totalAttendance: { decrement: 1 },
+          ...(attendance.status === "Present" && { presents: { decrement: 1 } }),
+          ...(attendance.status === "Absent" && { absents: { decrement: 1 } }),
+        },
+      }),
+    ]);
+
+    console.log(`✅ Deleted attendance for ${date}`);
 
     return NextResponse.json(
-      { message: "Attendance deleted successfully", deletedCount: deleted.count },
+      { message: "Attendance deleted successfully" },
       { status: 200 }
     );
   } catch (err: any) {
