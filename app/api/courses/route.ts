@@ -99,6 +99,11 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: "Unauthorized to delete this course" }, { status: 403 });
     }
 
+    // ✅ Delete all attendance records for this course
+    await prisma.attendance.deleteMany({
+      where: { courseId },
+    });
+
     // ✅ Delete the course
     const deletedCourse = await prisma.course.delete({
       where: { id: courseId },

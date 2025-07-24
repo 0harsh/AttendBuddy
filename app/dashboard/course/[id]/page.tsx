@@ -130,60 +130,66 @@ export default function CourseDetailsPage() {
   }
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading attendance...</p>;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-100"><p className="text-center text-gray-500">Loading attendance...</p></div>;
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">{name ?? "Course"}</h1>
-      <p className="text-gray-600 mb-6">
-        Manage attendance for <strong>{name ?? "this course"}</strong>. Click a
-        date to mark Present, Absent, or remove.
-      </p>
-
-      <div className="w-full max-w-xl mx-auto">
-        <Calendar
-          onClickDay={handleDateClick}
-          tileContent={tileContent}
-          value={selectedDate}
-        />
-      </div>
-
-      {/* Menu for Present/Absent/Remove */}
-      {showMenu && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg space-y-2 text-center">
-            <h2 className="text-lg font-semibold">
-              Mark attendance for{" "}
-              {selectedDate?.toLocaleDateString("en-IN")}
-            </h2>
-            <button
-              onClick={() => markAttendance("Present")}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded"
-            >
-              Mark Present
-            </button>
-            <button
-              onClick={() => markAttendance("Absent")}
-              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded"
-            >
-              Mark Absent
-            </button>
-            <button
-              onClick={deleteAttendance}
-              className="w-full bg-gray-300 hover:bg-gray-400 text-black py-2 rounded"
-            >
-              Remove Attendance
-            </button>
-            <button
-              onClick={() => setShowMenu(false)}
-              className="w-full bg-white border hover:bg-gray-100 py-2 rounded"
-            >
-              Cancel
-            </button>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="w-full max-w-md bg-white rounded-lg shadow p-4 flex flex-col items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-700 mb-1 text-center">{name ?? "Course"}</h1>
+        <p className="text-gray-600 text-center mb-3 text-sm">
+          Click a date to mark Present, Absent, or remove attendance.
+        </p>
+        {/* Legend */}
+        <div className="flex gap-4 items-center justify-center mb-3">
+          <span className="flex items-center gap-1 text-green-600 text-xs"><span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>Present</span>
+          <span className="flex items-center gap-1 text-red-500 text-xs"><span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>Absent</span>
+        </div>
+        <div className="w-full flex justify-center">
+          <div className="bg-white border border-gray-200 rounded-md shadow-sm p-0">
+            <Calendar
+              onClickDay={handleDateClick}
+              tileContent={tileContent}
+              value={selectedDate}
+              className="rounded-md"
+            />
           </div>
         </div>
-      )}
+        {/* Modal for Present/Absent/Remove */}
+        {showMenu && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+            <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-xs space-y-2 text-center">
+              <h2 className="text-base font-semibold mb-2 text-blue-700">
+                Mark attendance for <span>{selectedDate?.toLocaleDateString("en-IN")}</span>
+              </h2>
+              <button
+                onClick={() => markAttendance("Present")}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded font-semibold text-sm transition"
+              >
+                Mark Present
+              </button>
+              <button
+                onClick={() => markAttendance("Absent")}
+                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded font-semibold text-sm transition"
+              >
+                Mark Absent
+              </button>
+              <button
+                onClick={deleteAttendance}
+                className="w-full bg-gray-200 hover:bg-gray-300 text-black py-2 rounded font-semibold text-sm transition"
+              >
+                Remove Attendance
+              </button>
+              <button
+                onClick={() => setShowMenu(false)}
+                className="w-full bg-white border hover:bg-gray-100 py-2 rounded font-semibold text-sm transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

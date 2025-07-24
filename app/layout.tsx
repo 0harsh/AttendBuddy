@@ -27,9 +27,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-50 text-gray-900`}>
         
 
-        <main className="container mx-auto px-4 py-8">{children}</main>
+        <main className="container mx-auto px-2 py-4 min-h-[80vh]">{children}</main>
 
-        <footer className="bg-white border-t mt-8">
+        <footer className="bg-white border-t mt-12 shadow-inner">
           <div className="container mx-auto px-4 py-4 text-center text-sm text-gray-500">
             &copy; {new Date().getFullYear()} TrackAttendance. All rights reserved.
           </div>
