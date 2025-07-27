@@ -7,29 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  email       String        @unique
+  email       String       @unique
   password    String
-  courses     Course[]      @relation("UserCourses")
-  attendances Attendance[]  @relation("UserAttendances") // 👈 Added back-reference
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  courses     Course[]     @relation("UserCourses")
+  attendances Attendance[] @relation("UserAttendances")
+  reminders   Reminder[]   @relation("UserReminders") // This side is correct
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
+
 model Course {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  user        User          @relation("UserCourses", fields: [userId], references: [id])
-  userId      String        @db.ObjectId
-  attendances Attendance[]  @relation("CourseAttendances")
-  totalAttendance Int       @default(0)
-  presents        Int       @default(0)
-  absents         Int       @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  user            User         @relation("UserCourses", fields: [userId], references: [id])
+  userId          String       @db.ObjectId
+  attendances     Attendance[] @relation("CourseAttendances")
+  reminders       Reminder[]   @relation("CourseReminders") // This side is correct
+  totalAttendance Int          @default(0)
+  presents        Int          @default(0)
+  absents         Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
+
 
 model Attendance {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -38,11 +43,27 @@ model Attendance {
   date      DateTime
   status    String   // "Present" or "Absent"
 
-  user      User     @relation("UserAttendances", fields: [userId], references: [id])
-  course    Course   @relation("CourseAttendances", fields: [courseId], references: [id])
+  user   User   @relation("UserAttendances", fields: [userId], references: [id])
+  course Course @relation("CourseAttendances", fields: [courseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, courseId, date]) // ✅ Enforce uniqueness
+  @@unique([userId, courseId, date])
+}
+
+
+model Reminder {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  courseId     String   @db.ObjectId
+  reminderDate DateTime
+  message      String?
+
+  user   User   @relation("UserReminders", fields: [userId], references: [id])
+  course Course @relation("CourseReminders", fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId, reminderDate])
 }

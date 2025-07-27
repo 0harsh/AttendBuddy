@@ -44,51 +44,77 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-sm p-6 bg-white rounded-2xl shadow-lg">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+    <div className="min-h-screen gradient-bg flex justify-center items-center p-4">
+      <div className="card-modern p-8 w-full max-w-md animate-fade-in">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="text-4xl mb-4">🎓</div>
+          <h1 className="text-3xl font-bold text-gradient mb-2">Welcome Back!</h1>
+          <p className="text-gray-600">Sign in to your AttendBuddy account</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm text-center">{error}</p>
+            </div>
           )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-modern"
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-modern"
+              required
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+            className="btn-primary w-full py-3 text-lg font-semibold"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Signing in...
+              </div>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Don&apos;t have an account?{" "}
-          <a
-            href="/signup"
-            className="text-blue-500 hover:underline font-medium"
-          >
-            Sign up
-          </a>
-        </p>
+        <div className="text-center mt-6">
+          <p className="text-gray-600">
+            Don't have an account?{" "}
+            <a
+              href="/signup"
+              className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+            >
+              Sign up
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

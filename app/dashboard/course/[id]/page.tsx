@@ -10,6 +10,10 @@ type Attendance = {
   date: string;
   status: "Present" | "Absent";
 };
+type Reminder = {
+  id: string;
+  reminderDate: string;
+};
 
 export default function CourseDetailsPage() {
   const params = useParams();
@@ -21,6 +25,12 @@ export default function CourseDetailsPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderMessage, setReminderMessage] = useState("");
+  const [reminderLoading, setReminderLoading] = useState(false);
+  const [reminderSuccess, setReminderSuccess] = useState("");
+  const [reminderError, setReminderError] = useState("");
+  const [reminders, setReminders] = useState<Reminder[]>([]);
 
   // Fetch attendance
   useEffect(() => {
@@ -44,10 +54,25 @@ export default function CourseDetailsPage() {
     if (id) fetchAttendance();
   }, [id]);
 
+  // Fetch reminders
+  useEffect(() => {
+    async function fetchReminders() {
+      try {
+        const res = await fetch(`/api/reminders?courseId=${id}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch reminders");
+        const data = await res.json();
+        setReminders(data.reminders || []);
+      } catch (err: any) {
+        console.error("❌ Error fetching reminders:", err.message);
+      }
+    }
+    if (id) fetchReminders();
+  }, [id]);
+
   // When user clicks a date
   function handleDateClick(date: Date) {
     setSelectedDate(date);
-    setShowMenu(true); // Open the choice menu
+    setShowMenu(true);
   }
 
   // Add or update attendance
@@ -111,81 +136,218 @@ export default function CourseDetailsPage() {
     }
   }
 
-  // Highlight Present/Absent days
+  // Helper to check if date is in the future
+  function isFutureDate(date: Date | null) {
+    if (!date) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date > today;
+  }
+
+  async function handleSetReminder() {
+    setReminderLoading(true);
+    setReminderError("");
+    setReminderSuccess("");
+    try {
+      const res = await fetch("/api/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: id,
+          reminderDate: selectedDate,
+          message: reminderMessage,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to set reminder");
+      setReminderSuccess("Reminder set successfully!");
+      setReminderMessage("");
+      setShowReminderModal(false);
+    } catch (err: any) {
+      setReminderError(err.message);
+    } finally {
+      setReminderLoading(false);
+    }
+  }
+
+  // Highlight Present/Absent/Reminder days
   function tileContent({ date }: { date: Date }) {
     const record = attendance.find(
       (a) => new Date(a.date).toDateString() === date.toDateString()
+    );
+    const reminder = reminders.find(
+      (r) => new Date(r.reminderDate).toDateString() === date.toDateString()
     );
 
     if (record) {
       return (
         <div
-          className={`h-2 w-2 rounded-full mx-auto mt-1 ${
+          className={`h-3 w-3 rounded-full mx-auto mt-1 shadow-sm ${
             record.status === "Present" ? "bg-green-500" : "bg-red-500"
           }`}
         ></div>
+      );
+    }
+    if (reminder) {
+      return (
+        <div className="h-3 w-3 rounded-full mx-auto mt-1 bg-blue-500 shadow-sm"></div>
       );
     }
     return null;
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-100"><p className="text-center text-gray-500">Loading attendance...</p></div>;
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">📚</div>
+          <p className="text-white text-lg">Loading attendance...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-4 flex flex-col items-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-blue-700 mb-1 text-center">{name ?? "Course"}</h1>
-        <p className="text-gray-600 text-center mb-3 text-sm">
-          Click a date to mark Present, Absent, or remove attendance.
-        </p>
-        {/* Legend */}
-        <div className="flex gap-4 items-center justify-center mb-3">
-          <span className="flex items-center gap-1 text-green-600 text-xs"><span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>Present</span>
-          <span className="flex items-center gap-1 text-red-500 text-xs"><span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>Absent</span>
+    <div className="min-h-screen gradient-bg py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 animate-fade-in">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 drop-shadow-lg">
+            {name ?? "Course"}
+          </h1>
+          <p className="text-white/80 text-lg">
+            Click a date to mark attendance or set reminders
+          </p>
         </div>
-        <div className="w-full flex justify-center">
-          <div className="bg-white border border-gray-200 rounded-md shadow-sm p-0">
+
+        {/* Legend */}
+        <div className="flex justify-center gap-6 mb-6 animate-slide-up">
+          <div className="flex items-center gap-2 text-white/90">
+            <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm"></div>
+            <span className="text-sm font-medium">Present</span>
+          </div>
+          <div className="flex items-center gap-2 text-white/90">
+            <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></div>
+            <span className="text-sm font-medium">Absent</span>
+          </div>
+          <div className="flex items-center gap-2 text-white/90">
+            <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></div>
+            <span className="text-sm font-medium">Reminder</span>
+          </div>
+        </div>
+
+        {/* Calendar */}
+        <div className="flex justify-center mb-8 animate-slide-up">
+          <div className="card-modern p-6">
             <Calendar
               onClickDay={handleDateClick}
               tileContent={tileContent}
               value={selectedDate}
-              className="rounded-md"
+              className="rounded-xl border-0 shadow-none"
             />
           </div>
         </div>
-        {/* Modal for Present/Absent/Remove */}
+
+        {/* Attendance Modal */}
         {showMenu && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-            <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-xs space-y-2 text-center">
-              <h2 className="text-base font-semibold mb-2 text-blue-700">
-                Mark attendance for <span>{selectedDate?.toLocaleDateString("en-IN")}</span>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+            <div className="card-modern p-6 w-full max-w-sm mx-4 animate-bounce-in">
+              <h2 className="text-xl font-bold text-center mb-4 text-gradient">
+                Mark attendance for{" "}
+                <span className="text-blue-600">
+                  {selectedDate?.toLocaleDateString("en-IN")}
+                </span>
               </h2>
-              <button
-                onClick={() => markAttendance("Present")}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded font-semibold text-sm transition"
-              >
-                Mark Present
-              </button>
-              <button
-                onClick={() => markAttendance("Absent")}
-                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded font-semibold text-sm transition"
-              >
-                Mark Absent
-              </button>
-              <button
-                onClick={deleteAttendance}
-                className="w-full bg-gray-200 hover:bg-gray-300 text-black py-2 rounded font-semibold text-sm transition"
-              >
-                Remove Attendance
-              </button>
-              <button
-                onClick={() => setShowMenu(false)}
-                className="w-full bg-white border hover:bg-gray-100 py-2 rounded font-semibold text-sm transition"
-              >
-                Cancel
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => markAttendance("Present")}
+                  className="btn-success w-full"
+                >
+                  ✅ Mark Present
+                </button>
+                <button
+                  onClick={() => markAttendance("Absent")}
+                  className="btn-danger w-full"
+                >
+                  ❌ Mark Absent
+                </button>
+                <button
+                  onClick={deleteAttendance}
+                  className="btn-secondary w-full"
+                >
+                  🗑️ Remove Attendance
+                </button>
+                {/* Set Reminder button for future dates only */}
+                {isFutureDate(selectedDate) && (
+                  <button
+                    onClick={() => {
+                      setShowReminderModal(true);
+                      setShowMenu(false);
+                    }}
+                    className="btn-primary w-full"
+                  >
+                    ⏰ Set Reminder
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowMenu(false)}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reminder Modal */}
+        {showReminderModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+            <div className="card-modern p-6 w-full max-w-sm mx-4 animate-bounce-in">
+              <h2 className="text-xl font-bold text-center mb-4 text-gradient">
+                Set Reminder for{" "}
+                <span className="text-blue-600">
+                  {selectedDate?.toLocaleDateString("en-IN")}
+                </span>
+              </h2>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Reminder message (optional)"
+                  value={reminderMessage}
+                  onChange={(e) => setReminderMessage(e.target.value)}
+                  className="input-modern"
+                  maxLength={100}
+                />
+                {reminderError && (
+                  <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+                    {reminderError}
+                  </div>
+                )}
+                {reminderSuccess && (
+                  <div className="text-green-600 text-sm text-center bg-green-50 p-2 rounded">
+                    {reminderSuccess}
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSetReminder}
+                    className="btn-primary flex-1"
+                    disabled={reminderLoading}
+                  >
+                    {reminderLoading ? "Setting..." : "Set Reminder"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowReminderModal(false);
+                      setReminderMessage("");
+                    }}
+                    className="btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -1,36 +1,68 @@
+import { useRouter } from "next/navigation";
+
 type NavbarProps = {
   onHamburgerClick: () => void;
-  onAddCourseClick: () => void; // 👈 New prop
+  onAddCourseClick: () => void;
 };
 
 export default function Navbar({
   onHamburgerClick,
   onAddCourseClick,
 }: NavbarProps) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        // Redirect to login page
+        router.push("/");
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white shadow">
+    <div className="flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur-sm shadow-modern border-b border-gray-100">
       {/* Hamburger */}
       <div
-        className="cursor-pointer text-2xl"
+        className="cursor-pointer text-2xl hover:scale-110 transition-transform duration-200 p-2 rounded-lg hover:bg-gray-100"
         onClick={onHamburgerClick}
       >
         ☰
       </div>
 
       {/* App Name */}
-      <h1 className="text-xl font-bold">TrackAttendance</h1>
+      <div className="flex items-center gap-3">
+        <div className="text-2xl">🎓</div>
+        <h1 className="text-2xl font-bold text-gradient">
+          AttendBuddy
+        </h1>
+      </div>
 
       {/* Actions */}
-      <div className="flex items-center space-x-4">
-        <div
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition"
-          onClick={onAddCourseClick} // 👈 Trigger modal
+      <div className="flex items-center space-x-3">
+        <button
+          className="btn-primary px-4 py-2 text-sm"
+          onClick={onAddCourseClick}
         >
-          Add Course
-        </div>
-        <div className="bg-red-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-red-600 transition">
-          Logout
-        </div>
+          ➕ Add Course
+        </button>
+        <button 
+          onClick={handleLogout}
+          className="btn-danger px-4 py-2 text-sm"
+        >
+          🚪 Logout
+        </button>
       </div>
     </div>
   );

@@ -11,14 +11,21 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAddCourseOpen, setIsAddCourseOpen] = useState(false); // 👈 Modal state
+  const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleCourseAdded = () => {
+    setIsAddCourseOpen(false);
+    // Trigger refresh by incrementing the counter
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   return (
     <div className="flex flex-col min-h-screen relative">
       {/* Navbar */}
       <Navbar
         onHamburgerClick={() => setSidebarOpen(!sidebarOpen)}
-        onAddCourseClick={() => setIsAddCourseOpen(true)} // 👈 Pass prop
+        onAddCourseClick={() => setIsAddCourseOpen(true)}
       />
 
       <div className="flex flex-1">
@@ -34,9 +41,7 @@ export default function DashboardLayout({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <AddCourse
-              onCourseAdded={() => {
-                setIsAddCourseOpen(false); // ✅ Close modal after adding
-              }}
+              onCourseAdded={handleCourseAdded}
             />
             <button
               onClick={() => setIsAddCourseOpen(false)}
