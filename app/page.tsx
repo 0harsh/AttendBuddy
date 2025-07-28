@@ -1,10 +1,12 @@
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <>
       <header className="bg-white/95 backdrop-blur-sm shadow-modern sticky top-0 z-30">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            <a href="/">AttendBuddy</a>
+            <Link href="/">AttendBuddy</Link>
           </h1>
           <nav className="space-x-4">
             <a

@@ -30,7 +30,8 @@ export default function QuickAttendancePage() {
         const initial: Record<string, "Present" | "Absent" | null> = {};
         data.courses.forEach((c: { id: string }) => (initial[c.id] = null));
         setAttendance(initial);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error("Error fetching courses:", err);
         setError("Error fetching courses");
       }
     }
@@ -60,7 +61,8 @@ export default function QuickAttendancePage() {
       if (!res.ok) throw new Error("Failed to submit quick attendance");
       setSuccess("Quick attendance submitted successfully!");
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error("Error submitting quick attendance:", err);
       setError("Error submitting quick attendance");
     } finally {
       setLoading(false);

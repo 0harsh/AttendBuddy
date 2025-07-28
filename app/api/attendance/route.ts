@@ -132,8 +132,9 @@ export async function POST(req: Request) {
       { message: "Attendance updated successfully", attendance },
       { status: 200 }
     );
-  } catch (err: any) {
-    console.error("❌ Error in POST /api/attendance:", err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("❌ Error in POST /api/attendance:", errorMessage);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
@@ -181,8 +182,9 @@ export async function GET(req: Request) {
       { message: "Attendances fetched successfully", attendances },
       { status: 200 }
     );
-  } catch (err: any) {
-    console.error("❌ Error in GET /api/attendance:", err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("❌ Error in GET /api/attendance:", errorMessage);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
@@ -263,8 +265,9 @@ export async function DELETE(req: Request) {
       { message: "Attendance deleted successfully" },
       { status: 200 }
     );
-  } catch (err: any) {
-    console.error("❌ Error in DELETE /api/attendance:", err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("❌ Error in DELETE /api/attendance:", errorMessage);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

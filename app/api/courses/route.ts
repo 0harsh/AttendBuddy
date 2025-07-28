@@ -57,8 +57,9 @@ export async function POST(req: Request) {
       { message: "Course created successfully", course },
       { status: 200 }
     );
-  } catch (err: any) {
-    console.error("❌ Error creating course:", err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("❌ Error creating course:", errorMessage);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -115,8 +116,9 @@ export async function DELETE(req: Request) {
       { message: "Course deleted successfully", deletedCourse },
       { status: 200 }
     );
-  } catch (err: any) {
-    console.error("❌ Error deleting course:", err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("❌ Error deleting course:", errorMessage);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -154,8 +156,9 @@ export async function GET(req: Request) {
       { message: "Courses fetched successfully", courses },
       { status: 200 }
     );
-  } catch (err: any) {
-    console.error("❌ Error fetching courses:", err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("❌ Error fetching courses:", errorMessage);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -27,8 +27,9 @@ export default function CourseDetails({ courseId }: CourseDetailsProps) {
         const data = await res.json();
         console.log("✅ Attendance fetched:", data.attendances);
         setAttendance(data.attendances);
-      } catch (err: any) {
-        console.error("❌ Error fetching attendance:", err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("❌ Error fetching attendance:", errorMessage);
       }
     }
     if (courseId) fetchAttendance();
@@ -69,8 +70,9 @@ export default function CourseDetails({ courseId }: CourseDetailsProps) {
         );
         return [...other, updated.attendance];
       });
-    } catch (err: any) {
-      console.error("❌ Error updating attendance:", err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("❌ Error updating attendance:", errorMessage);
     }
   }
 

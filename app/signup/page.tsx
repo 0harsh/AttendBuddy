@@ -37,7 +37,8 @@ export default function Signup() {
       } else {
         setError(data.message || "Registration failed");
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error("Signup error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

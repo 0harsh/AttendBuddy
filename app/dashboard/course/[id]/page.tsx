@@ -44,8 +44,9 @@ export default function CourseDetailsPage() {
         const data = await res.json();
         console.log("✅ Attendance fetched:", data.attendances);
         setAttendance(data.attendances);
-      } catch (err: any) {
-        console.error("❌ Error fetching attendance:", err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("❌ Error fetching attendance:", errorMessage);
       } finally {
         setLoading(false);
       }
@@ -62,8 +63,9 @@ export default function CourseDetailsPage() {
         if (!res.ok) throw new Error("Failed to fetch reminders");
         const data = await res.json();
         setReminders(data.reminders || []);
-      } catch (err: any) {
-        console.error("❌ Error fetching reminders:", err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("❌ Error fetching reminders:", errorMessage);
       }
     }
     if (id) fetchReminders();
@@ -102,8 +104,9 @@ export default function CourseDetailsPage() {
         );
         return [...filtered, updated.attendance];
       });
-    } catch (err: any) {
-      console.error("❌ Error updating attendance:", err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("❌ Error updating attendance:", errorMessage);
     } finally {
       setShowMenu(false);
     }
@@ -129,8 +132,9 @@ export default function CourseDetailsPage() {
             new Date(selectedDate!).toDateString()
         )
       );
-    } catch (err: any) {
-      console.error("❌ Error deleting attendance:", err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("❌ Error deleting attendance:", errorMessage);
     } finally {
       setShowMenu(false);
     }

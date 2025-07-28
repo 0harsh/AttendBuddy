@@ -43,8 +43,9 @@ export default function AddCourse({ onCourseAdded }: { onCourseAdded?: () => voi
         console.error("❌ Error adding course:", data.message);
         setError(data.message || "Failed to add course");
       }
-    } catch (err: any) {
-      console.error("❌ Network error:", err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("❌ Network error:", errorMessage);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

@@ -36,7 +36,8 @@ export default function LoginPage() {
       } else {
         setError(data.message || "Login failed");
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error("Login error:", err);
       setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -106,7 +107,7 @@ export default function LoginPage() {
 
         <div className="text-center mt-6">
           <p className="text-gray-600">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a
               href="/signup"
               className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"

@@ -9,7 +9,7 @@ export default function AboutPage() {
             About AttendBuddy
           </h1>
           <p className="text-xl text-white/90 max-w-3xl mx-auto">
-            Your trusted companion for academic success. We're here to help you stay organized, 
+            Your trusted companion for academic success. We&apos;re here to help you stay organized, 
             track your progress, and never miss another class.
           </p>
         </div>
@@ -117,13 +117,13 @@ export default function AboutPage() {
               <div className="text-4xl mb-4">📧</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">Email Us</h3>
               <p className="text-gray-600">hello@attendbuddy.com</p>
-              <p className="text-gray-500 text-sm mt-2">We'd love to hear from you!</p>
+              <p className="text-gray-500 text-sm mt-2">We&apos;d love to hear from you!</p>
             </div>
             <div className="text-center">
               <div className="text-4xl mb-4">💬</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">Support</h3>
               <p className="text-gray-600">support@attendbuddy.com</p>
-              <p className="text-gray-500 text-sm mt-2">Need help? We're here for you!</p>
+                              <p className="text-gray-500 text-sm mt-2">Need help? We&apos;re here for you!</p>
             </div>
           </div>
         </div>

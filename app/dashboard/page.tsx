@@ -30,8 +30,9 @@ export default function DashboardPage() {
         const data = await res.json();
         console.log("✅ Courses fetched:", data.courses);
         setCourses(data.courses);
-      } catch (err: any) {
-        console.error("❌ Error fetching courses:", err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("❌ Error fetching courses:", errorMessage);
       }
     }
 

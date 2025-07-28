@@ -66,11 +66,12 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ message: 'Reminder set successfully!', reminder }, { status: 201 });
-  } catch (error: any) {
-    if (error.code === 'P2002') { // Prisma's unique constraint violation code
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') { // Prisma's unique constraint violation code
       return NextResponse.json({ error: 'A reminder for this class on this date already exists.' }, { status: 409 });
     }
-    console.error('Set Reminder Error:', error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error('Set Reminder Error:', errorMessage);
     return NextResponse.json({ error: 'Failed to set reminder.' }, { status: 500 });
   }
 }

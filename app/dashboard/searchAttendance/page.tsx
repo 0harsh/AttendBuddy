@@ -32,7 +32,8 @@ export default function SearchAttendancePage() {
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         setCourses(data.courses);
-      } catch (err) {
+      } catch (err: unknown) {
+        console.error("Error fetching courses:", err);
         setError("Error fetching courses");
       }
     }
@@ -56,7 +57,7 @@ export default function SearchAttendancePage() {
             
             const data = await res.json();
             const record = data.attendances.find(
-              (a: any) => new Date(a.date).toDateString() === selectedDate.toDateString()
+              (a: { date: string; status: string }) => new Date(a.date).toDateString() === selectedDate.toDateString()
             );
             
             // Only add records that have attendance entries
@@ -78,7 +79,8 @@ export default function SearchAttendancePage() {
         });
         
         setAttendanceRecords(sortedRecords);
-      } catch (err) {
+      } catch (err: unknown) {
+        console.error("Error fetching attendance:", err);
         setError("Error fetching attendance");
       } finally {
         setLoading(false);
