@@ -68,66 +68,109 @@ export default function QuickAttendancePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-2 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">Quick Attendance</h1>
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search for courses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-          />
+    <div className="min-h-screen gradient-bg py-8 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header Section */}
+        <div className="text-center mb-8 animate-fade-in">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+            Quick Attendance
+          </h1>
+          <p className="text-white/90 text-lg max-w-2xl mx-auto">
+            Mark attendance for all your courses at once
+          </p>
         </div>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        {success && <p className="text-green-600 text-center mb-4">{success}</p>}
-        <div className="space-y-4 mb-8">
-          {filteredCourses.map((course) => (
-            <div
-              key={course.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between bg-blue-50 p-5 rounded-lg shadow border hover:shadow-md transition group gap-4"
-            >
-              <div className="flex-1 text-lg font-semibold text-blue-800 truncate">{course.name}</div>
-              <div className="flex gap-2">
-                <button
-                  className={`px-4 py-2 rounded-lg font-medium border transition-colors duration-150 ${
-                    attendance[course.id] === "Present"
-                      ? "bg-green-500 text-white border-green-600"
-                      : "bg-white text-green-700 border-green-400 hover:bg-green-50"
-                  }`}
-                  onClick={() => handleMark(course.id, "Present")}
-                  type="button"
-                >
-                  Present
-                </button>
-                <button
-                  className={`px-4 py-2 rounded-lg font-medium border transition-colors duration-150 ${
-                    attendance[course.id] === "Absent"
-                      ? "bg-red-500 text-white border-red-600"
-                      : "bg-white text-red-700 border-red-400 hover:bg-red-50"
-                  }`}
-                  onClick={() => handleMark(course.id, "Absent")}
-                  type="button"
-                >
-                  Absent
-                </button>
+
+        {/* Main Content Card */}
+        <div className="card-modern p-8 animate-slide-up">
+          {/* Search Bar */}
+          <div className="mb-8">
+            <div className="relative max-w-md mx-auto">
+              <input
+                type="text"
+                placeholder="Search for courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-modern w-full pl-12 pr-4"
+              />
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                🔍
               </div>
             </div>
-          ))}
-          {filteredCourses.length === 0 && (
-            <p className="text-gray-500 text-center">
-              No courses found for "{searchQuery}"
-            </p>
+          </div>
+
+          {/* Error and Success Messages */}
+          {error && (
+            <div className="text-center mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600">{error}</p>
+            </div>
           )}
+          {success && (
+            <div className="text-center mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600">{success}</p>
+            </div>
+          )}
+
+          {/* Courses List */}
+          <div className="space-y-4 mb-8">
+            {filteredCourses.map((course, index) => (
+              <div
+                key={course.id}
+                className="card-modern p-6 hover-lift animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{course.name}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className={`px-6 py-3 rounded-lg font-semibold border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                        attendance[course.id] === "Present"
+                          ? "bg-gradient-to-r from-green-500 to-green-600 text-white border-green-600 shadow-lg"
+                          : "bg-white text-green-700 border-green-400 hover:bg-green-50 hover:border-green-500 focus:ring-green-500"
+                      }`}
+                      onClick={() => handleMark(course.id, "Present")}
+                      type="button"
+                    >
+                      ✅ Present
+                    </button>
+                    <button
+                      className={`px-6 py-3 rounded-lg font-semibold border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                        attendance[course.id] === "Absent"
+                          ? "bg-gradient-to-r from-red-500 to-red-600 text-white border-red-600 shadow-lg"
+                          : "bg-white text-red-700 border-red-400 hover:bg-red-50 hover:border-red-500 focus:ring-red-500"
+                      }`}
+                      onClick={() => handleMark(course.id, "Absent")}
+                      type="button"
+                    >
+                      ❌ Absent
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filteredCourses.length === 0 && (
+              <div className="text-center py-12 animate-fade-in">
+                <div className="text-6xl mb-4">📚</div>
+                <p className="text-gray-600 text-lg">
+                  {searchQuery ? `No courses found for "${searchQuery}"` : "No courses available"}
+                </p>
+                <p className="text-gray-500 text-sm mt-2">
+                  {searchQuery ? "Try a different search term" : "Add courses to get started"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <button
+            className="btn-primary w-full py-4 text-lg font-semibold"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? "Submitting..." : "Submit Quick Attendance"}
+          </button>
         </div>
-        <button
-          className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold shadow hover:bg-blue-700 transition-colors disabled:opacity-50"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? "Submitting..." : "Submit"}
-        </button>
       </div>
     </div>
   );

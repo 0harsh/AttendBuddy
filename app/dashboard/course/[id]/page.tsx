@@ -252,7 +252,7 @@ export default function CourseDetailsPage() {
         {showMenu && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
             <div className="card-modern p-6 w-full max-w-sm mx-4 animate-bounce-in">
-              <h2 className="text-xl font-bold text-center mb-4 text-gradient">
+              <h2 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Mark attendance for{" "}
                 <span className="text-blue-600">
                   {selectedDate?.toLocaleDateString("en-IN")}
@@ -304,7 +304,7 @@ export default function CourseDetailsPage() {
         {showReminderModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
             <div className="card-modern p-6 w-full max-w-sm mx-4 animate-bounce-in">
-              <h2 className="text-xl font-bold text-center mb-4 text-gradient">
+              <h2 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Set Reminder for{" "}
                 <span className="text-blue-600">
                   {selectedDate?.toLocaleDateString("en-IN")}

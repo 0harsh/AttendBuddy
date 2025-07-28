@@ -82,7 +82,7 @@ export default function DashboardPage() {
                       pathname: `/dashboard/course/${course.id}`,
                       query: { name: course.name },
                     }}
-                    className="text-xl font-bold text-gradient hover:underline transition-all duration-200"
+                    className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:underline transition-all duration-200"
                   >
                     {course.name}
                   </Link>

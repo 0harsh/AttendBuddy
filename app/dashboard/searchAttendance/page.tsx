@@ -117,7 +117,7 @@ export default function SearchAttendancePage() {
         {/* Results */}
         {selectedDate && (
           <div className="card-modern p-8 animate-slide-up">
-            <h2 className="text-2xl font-bold text-center mb-6 text-gradient">
+            <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Attendance for {selectedDate.toLocaleDateString()}
             </h2>
             

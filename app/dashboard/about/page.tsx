@@ -18,7 +18,7 @@ export default function AboutPage() {
         <div className="card-modern p-8 mb-12 animate-slide-up">
           <div className="text-center mb-8">
             <div className="text-4xl mb-4">🎯</div>
-            <h2 className="text-3xl font-bold text-gradient mb-4">Our Mission</h2>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">Our Mission</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               To simplify attendance tracking and help students maintain perfect attendance records 
               through an intuitive, beautiful, and reliable platform.
@@ -58,7 +58,7 @@ export default function AboutPage() {
 
         {/* Why Choose Us */}
         <div className="card-modern p-8 mb-12 animate-slide-up">
-          <h2 className="text-3xl font-bold text-center text-gradient mb-8">Why Choose AttendBuddy?</h2>
+          <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8">Why Choose AttendBuddy?</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
@@ -111,7 +111,7 @@ export default function AboutPage() {
 
         {/* Contact Section */}
         <div className="card-modern p-8 animate-slide-up">
-          <h2 className="text-3xl font-bold text-center text-gradient mb-8">Get in Touch</h2>
+          <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8">Get in Touch</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="text-center">
               <div className="text-4xl mb-4">📧</div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { useRouter } from "next/navigation";
 
 type SidebarProps = {
@@ -57,7 +59,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
           <div className="text-3xl">🎓</div>
           <div>
-            <h1 className="text-xl font-bold text-gradient">AttendBuddy</h1>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">AttendBuddy</h1>
             <p className="text-xs text-gray-500">Your attendance buddy</p>
           </div>
           <button
