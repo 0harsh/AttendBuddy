@@ -2,31 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCourseRefresh } from "../layout";
 
 export default function QuickAttendancePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [courses, setCourses] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [courses, setCourses] = useState<{ id: string; name: string }[]>([]);
   const [attendance, setAttendance] = useState<Record<string, "Present" | "Absent" | null>>({});
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
+  const { refreshTrigger } = useCourseRefresh();
 
   useEffect(() => {
     async function fetchCourses() {
       try {
         const res = await fetch("/api/courses", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         setCourses(data.courses);
-        // Initialize attendance state
         const initial: Record<string, "Present" | "Absent" | null> = {};
         data.courses.forEach((c: { id: string }) => (initial[c.id] = null));
         setAttendance(initial);
@@ -36,7 +33,7 @@ export default function QuickAttendancePage() {
       }
     }
     fetchCourses();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger as dependency
 
   const filteredCourses = courses.filter((course) =>
     course.name.toLowerCase().includes(searchQuery.toLowerCase())

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import { useCourseRefresh } from "../layout";
 
 interface Course {
   id: string;
@@ -21,6 +22,7 @@ export default function SearchAttendancePage() {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { refreshTrigger } = useCourseRefresh();
 
   useEffect(() => {
     async function fetchCourses() {
@@ -38,7 +40,7 @@ export default function SearchAttendancePage() {
       }
     }
     fetchCourses();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger as dependency
 
   useEffect(() => {
     async function fetchAttendanceForDate() {

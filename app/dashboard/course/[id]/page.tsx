@@ -167,8 +167,9 @@ export default function CourseDetailsPage() {
       setReminderSuccess("Reminder set successfully!");
       setReminderMessage("");
       setShowReminderModal(false);
-    } catch (err: any) {
-      setReminderError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setReminderError(errorMessage);
     } finally {
       setReminderLoading(false);
     }

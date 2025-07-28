@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useCourseRefresh } from "./layout";
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [courses, setCourses] = useState<
     { id: string; name: string; presents?: number; totalAttendance?: number }[]
   >([]);
+  const { refreshTrigger } = useCourseRefresh();
 
   const filteredCourses = courses.filter((course) =>
     course.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -37,7 +39,7 @@ export default function DashboardPage() {
     }
 
     fetchCourses();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger as dependency
 
   return (
     <div className="min-h-screen gradient-bg py-8 px-4 sm:px-6">
@@ -134,7 +136,8 @@ export default function DashboardPage() {
                         });
                         if (!res.ok) throw new Error("Failed to delete course");
                         setCourses((prev) => prev.filter((c) => c.id !== course.id));
-                      } catch (err) {
+                      } catch (err: unknown) {
+                        console.error("Error deleting course:", err);
                         alert("Error deleting course");
                       }
                     }}
