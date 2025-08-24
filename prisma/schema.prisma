@@ -12,6 +12,8 @@ model User {
   name        String
   email       String       @unique
   password    String
+
+
   courses     Course[]     @relation("UserCourses")
   attendances Attendance[] @relation("UserAttendances")
   reminders   Reminder[]   @relation("UserReminders") // This side is correct
@@ -33,6 +35,7 @@ model Course {
   updatedAt       DateTime     @updatedAt
 }
 
+
 model Attendance {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId
@@ -49,6 +52,7 @@ model Attendance {
   @@unique([userId, courseId, date])
 }
 
+
 model Reminder {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   userId       String   @db.ObjectId
@@ -63,3 +67,6 @@ model Reminder {
 
   @@unique([userId, courseId, reminderDate])
 }
+
+
+// add on delete cascade

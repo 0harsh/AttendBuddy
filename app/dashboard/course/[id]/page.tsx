@@ -189,7 +189,10 @@ export default function CourseDetailsPage() {
   function isFutureDate(date: Date | null) {
     if (!date) return false;
     const today = new Date();
+    //const yesterday = new Date();
+    //yesterday.setDate(yesterday.getDate() - 1);
     today.setHours(0, 0, 0, 0);
+    //yesterday.setHours(0, 0, 0, 0);
     return date > today;
   }
 
