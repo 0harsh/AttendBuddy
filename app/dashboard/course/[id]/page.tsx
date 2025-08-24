@@ -2,18 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-
-type Attendance = {
-  id: string;
-  date: string;
-  status: "Present" | "Absent";
-};
-type Reminder = {
-  id: string;
-  reminderDate: string;
-};
+import CourseHeader from "../../../../components/CourseHeader";
+import AttendanceLegend from "../../../../components/AttendanceLegend";
+import AttendanceCalendar from "../../../../components/AttendanceCalendar";
+import AttendanceModal from "../../../../components/AttendanceModal";
+import ReminderModal from "../../../../components/ReminderModal";
+import LoadingSpinner from "../../../../components/LoadingSpinner";
+import { Attendance, Reminder } from "../../../../types/attendance";
 
 export default function CourseDetailsPage() {
   const params = useParams();
@@ -31,6 +26,8 @@ export default function CourseDetailsPage() {
   const [reminderSuccess, setReminderSuccess] = useState("");
   const [reminderError, setReminderError] = useState("");
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [attendanceMessage, setAttendanceMessage] = useState("");
+  const [attendanceMessageType, setAttendanceMessageType] = useState<"success" | "error">("success");
 
   // Fetch attendance
   useEffect(() => {
@@ -55,6 +52,21 @@ export default function CourseDetailsPage() {
     if (id) fetchAttendance();
   }, [id]);
 
+  // Refresh attendance data
+  async function refreshAttendance() {
+    try {
+      const res = await fetch(`/api/attendance?courseId=${id}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAttendance(data.attendances);
+      }
+    } catch (err: unknown) {
+      console.error("❌ Error refreshing attendance:", err);
+    }
+  }
+
   // Fetch reminders
   useEffect(() => {
     async function fetchReminders() {
@@ -71,6 +83,15 @@ export default function CourseDetailsPage() {
     if (id) fetchReminders();
   }, [id]);
 
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeouts when component unmounts
+      setAttendanceMessage("");
+      setReminderMessage("");
+    };
+  }, []);
+
   // When user clicks a date
   function handleDateClick(date: Date) {
     setSelectedDate(date);
@@ -79,6 +100,8 @@ export default function CourseDetailsPage() {
 
   // Add or update attendance
   async function markAttendance(status: "Present" | "Absent") {
+    if (!selectedDate) return;
+    
     try {
       const res = await fetch("/api/attendance", {
         method: "POST",
@@ -95,28 +118,40 @@ export default function CourseDetailsPage() {
       const updated = await res.json();
       console.log("✅ Attendance updated:", updated);
 
-      // Update local state
+      // Show success message
+      setAttendanceMessage(`Marked ${status.toLowerCase()} for ${selectedDate.toLocaleDateString()}`);
+      setAttendanceMessageType("success");
+      setTimeout(() => setAttendanceMessage(""), 3000);
+
+      // Update local state more robustly
       setAttendance((prev) => {
+        const selectedDateString = selectedDate.toDateString();
         const filtered = prev.filter(
-          (a) =>
-            new Date(a.date).toDateString() !==
-            new Date(selectedDate!).toDateString()
+          (a) => new Date(a.date).toDateString() !== selectedDateString
         );
         return [...filtered, updated.attendance];
       });
+      
+      setShowMenu(false);
+      refreshAttendance(); // Refresh attendance data
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Error updating attendance:", errorMessage);
-    } finally {
-      setShowMenu(false);
+      
+      // Show error message
+      setAttendanceMessage(`Failed to mark attendance: ${errorMessage}`);
+      setAttendanceMessageType("error");
+      setTimeout(() => setAttendanceMessage(""), 5000);
     }
   }
 
   // Delete attendance
   async function deleteAttendance() {
+    if (!selectedDate) return;
+    
     try {
       const res = await fetch(
-        `/api/attendance?courseId=${id}&date=${selectedDate?.toISOString()}`,
+        `/api/attendance?courseId=${id}&date=${selectedDate.toISOString()}`,
         { method: "DELETE" }
       );
 
@@ -124,19 +159,29 @@ export default function CourseDetailsPage() {
 
       console.log("✅ Attendance deleted");
 
-      // Remove from state
-      setAttendance((prev) =>
-        prev.filter(
-          (a) =>
-            new Date(a.date).toDateString() !==
-            new Date(selectedDate!).toDateString()
-        )
-      );
+      // Show success message
+      setAttendanceMessage(`Removed attendance for ${selectedDate.toLocaleDateString()}`);
+      setAttendanceMessageType("success");
+      setTimeout(() => setAttendanceMessage(""), 3000);
+
+      // Remove from state more robustly
+      setAttendance((prev) => {
+        const selectedDateString = selectedDate.toDateString();
+        return prev.filter(
+          (a) => new Date(a.date).toDateString() !== selectedDateString
+        );
+      });
+      
+      setShowMenu(false);
+      refreshAttendance(); // Refresh attendance data
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Error deleting attendance:", errorMessage);
-    } finally {
-      setShowMenu(false);
+      
+      // Show error message
+      setAttendanceMessage(`Failed to delete attendance: ${errorMessage}`);
+      setAttendanceMessageType("error");
+      setTimeout(() => setAttendanceMessage(""), 5000);
     }
   }
 
@@ -146,6 +191,42 @@ export default function CourseDetailsPage() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return date > today;
+  }
+
+  // check if attendance is already marked or not
+  function isAttendanceMarked(date: Date | null) {
+    if (!date) return false;
+    
+    // Normalize the selected date to start of day (midnight) in local timezone
+    const selectedDateStart = new Date(date);
+    selectedDateStart.setHours(0, 0, 0, 0);
+    
+    return attendance.some((attendanceRecord) => {
+      // Normalize the attendance date to start of day (midnight) in local timezone
+      const attendanceDate = new Date(attendanceRecord.date);
+      attendanceDate.setHours(0, 0, 0, 0);
+      
+      // Compare the normalized dates using timestamp comparison
+      return attendanceDate.getTime() === selectedDateStart.getTime();
+    });
+  }
+
+  // check if reminder exists for the selected date
+  function isReminderExists(date: Date | null) {
+    if (!date) return false;
+    
+    // Normalize the selected date to start of day (midnight) in local timezone
+    const selectedDateStart = new Date(date);
+    selectedDateStart.setHours(0, 0, 0, 0);
+    
+    return reminders.some((reminder) => {
+      // Normalize the reminder date to start of day (midnight) in local timezone
+      const reminderDate = new Date(reminder.reminderDate);
+      reminderDate.setHours(0, 0, 0, 0);
+      
+      // Compare the normalized dates using timestamp comparison
+      return reminderDate.getTime() === selectedDateStart.getTime();
+    });
   }
 
   async function handleSetReminder() {
@@ -164,9 +245,17 @@ export default function CourseDetailsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to set reminder");
+      
       setReminderSuccess("Reminder set successfully!");
       setReminderMessage("");
       setShowReminderModal(false);
+      
+      // Refresh reminders list
+      const refreshRes = await fetch(`/api/reminders?courseId=${id}`, { cache: "no-store" });
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json();
+        setReminders(refreshData.reminders || []);
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       setReminderError(errorMessage);
@@ -175,187 +264,103 @@ export default function CourseDetailsPage() {
     }
   }
 
-  // Highlight Present/Absent/Reminder days
-  function tileContent({ date }: { date: Date }) {
-    const record = attendance.find(
-      (a) => new Date(a.date).toDateString() === date.toDateString()
-    );
-    const reminder = reminders.find(
-      (r) => new Date(r.reminderDate).toDateString() === date.toDateString()
-    );
+  // Remove reminder
+  async function handleRemoveReminder() {
+    if (!selectedDate) return;
+    
+    try {
+      const res = await fetch(
+        `/api/reminders?courseId=${id}&date=${selectedDate.toISOString()}`,
+        { method: "DELETE" }
+      );
 
-    if (record) {
-      return (
-        <div
-          className={`h-3 w-3 rounded-full mx-auto mt-1 shadow-sm ${
-            record.status === "Present" ? "bg-green-500" : "bg-red-500"
-          }`}
-        ></div>
-      );
+      if (!res.ok) throw new Error("Failed to remove reminder");
+
+      console.log("✅ Reminder removed");
+
+      // Show success message
+      setAttendanceMessage(`Removed reminder for ${selectedDate.toLocaleDateString()}`);
+      setAttendanceMessageType("success");
+      setTimeout(() => setAttendanceMessage(""), 3000);
+
+      // Refresh reminders list
+      const refreshRes = await fetch(`/api/reminders?courseId=${id}`, { cache: "no-store" });
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json();
+        setReminders(refreshData.reminders || []);
+      }
+      
+      setShowMenu(false);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("❌ Error removing reminder:", errorMessage);
+      
+      // Show error message
+      setAttendanceMessage(`Failed to remove reminder: ${errorMessage}`);
+      setAttendanceMessageType("error");
+      setTimeout(() => setAttendanceMessage(""), 5000);
     }
-    if (reminder) {
-      return (
-        <div className="h-3 w-3 rounded-full mx-auto mt-1 bg-blue-500 shadow-sm"></div>
-      );
-    }
-    return null;
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">📚</div>
-          <p className="text-white text-lg">Loading attendance...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="min-h-screen gradient-bg py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 drop-shadow-lg">
-            {name ?? "Course"}
-          </h1>
-          <p className="text-white/80 text-lg">
-            Click a date to mark attendance or set reminders
-          </p>
-        </div>
-
-        {/* Legend */}
-        <div className="flex justify-center gap-6 mb-6 animate-slide-up">
-          <div className="flex items-center gap-2 text-white/90">
-            <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm"></div>
-            <span className="text-sm font-medium">Present</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/90">
-            <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></div>
-            <span className="text-sm font-medium">Absent</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/90">
-            <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></div>
-            <span className="text-sm font-medium">Reminder</span>
-          </div>
-        </div>
-
-        {/* Calendar */}
-        <div className="flex justify-center mb-8 animate-slide-up">
-          <div className="card-modern p-6">
-            <Calendar
-              onClickDay={handleDateClick}
-              tileContent={tileContent}
-              value={selectedDate}
-              className="rounded-xl border-0 shadow-none"
-            />
-          </div>
-        </div>
-
-        {/* Attendance Modal */}
-        {showMenu && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-            <div className="card-modern p-6 w-full max-w-sm mx-4 animate-bounce-in">
-              <h2 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Mark attendance for{" "}
-                <span className="text-blue-600">
-                  {selectedDate?.toLocaleDateString("en-IN")}
-                </span>
-              </h2>
-              <div className="space-y-3">
-                <button
-                  onClick={() => markAttendance("Present")}
-                  className="btn-success w-full"
-                >
-                  ✅ Mark Present
-                </button>
-                <button
-                  onClick={() => markAttendance("Absent")}
-                  className="btn-danger w-full"
-                >
-                  ❌ Mark Absent
-                </button>
-                <button
-                  onClick={deleteAttendance}
-                  className="btn-secondary w-full"
-                >
-                  🗑️ Remove Attendance
-                </button>
-                {/* Set Reminder button for future dates only */}
-                {isFutureDate(selectedDate) && (
-                  <button
-                    onClick={() => {
-                      setShowReminderModal(true);
-                      setShowMenu(false);
-                    }}
-                    className="btn-primary w-full"
-                  >
-                    ⏰ Set Reminder
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowMenu(false)}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold transition-all duration-200"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+        <CourseHeader courseName={name} />
+        
+        {/* Attendance Feedback Message */}
+        {attendanceMessage && (
+          <div className={`mb-4 p-3 rounded-lg text-center animate-fade-in ${
+            attendanceMessageType === "success" 
+              ? "bg-yellow-100 text-green-700 border border-green-200" 
+              : "bg-red-100 text-red-700 border border-red-200"
+          }`}>
+            {attendanceMessage}
           </div>
         )}
+        
+        <AttendanceLegend />
+        
+        <AttendanceCalendar
+          attendance={attendance}
+          reminders={reminders}
+          selectedDate={selectedDate}
+          onDateClick={handleDateClick}
+        />
 
-        {/* Reminder Modal */}
-        {showReminderModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-            <div className="card-modern p-6 w-full max-w-sm mx-4 animate-bounce-in">
-              <h2 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Set Reminder for{" "}
-                <span className="text-blue-600">
-                  {selectedDate?.toLocaleDateString("en-IN")}
-                </span>
-              </h2>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Reminder message (optional)"
-                  value={reminderMessage}
-                  onChange={(e) => setReminderMessage(e.target.value)}
-                  className="input-modern"
-                  maxLength={100}
-                />
-                {reminderError && (
-                  <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
-                    {reminderError}
-                  </div>
-                )}
-                {reminderSuccess && (
-                  <div className="text-green-600 text-sm text-center bg-green-50 p-2 rounded">
-                    {reminderSuccess}
-                  </div>
-                )}
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleSetReminder}
-                    className="btn-primary flex-1"
-                    disabled={reminderLoading}
-                  >
-                    {reminderLoading ? "Setting..." : "Set Reminder"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowReminderModal(false);
-                      setReminderMessage("");
-                    }}
-                    className="btn-secondary flex-1"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <AttendanceModal
+          isOpen={showMenu}
+          selectedDate={selectedDate}
+          isFutureDate={isFutureDate(selectedDate)}
+          isAttendanceMarked={isAttendanceMarked(selectedDate)}
+          reminderExists={isReminderExists(selectedDate)}
+          onMarkAttendance={markAttendance}
+          onDeleteAttendance={deleteAttendance}
+          onSetReminder={() => {
+            setShowReminderModal(true);
+            setShowMenu(false);
+          }}
+          onClose={() => setShowMenu(false)}
+          onRemoveReminder={handleRemoveReminder}
+        />
+
+        <ReminderModal
+          isOpen={showReminderModal}
+          selectedDate={selectedDate}
+          reminderMessage={reminderMessage}
+          reminderLoading={reminderLoading}
+          reminderError={reminderError}
+          reminderSuccess={reminderSuccess}
+          onMessageChange={setReminderMessage}
+          onSetReminder={handleSetReminder}
+          onClose={() => {
+            setShowReminderModal(false);
+            setReminderMessage("");
+          }}
+        />
       </div>
     </div>
   );
