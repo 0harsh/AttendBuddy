@@ -130,8 +130,8 @@ export async function GET(request: Request) {
        16: ['America/Chicago', 'America/Mexico_City'], // UTC-6 - 7 AM local time
        17: ['America/Denver', 'America/Edmonton'], // UTC-7 - 7 AM local time
        18: ['America/Anchorage', 'Pacific/Honolulu'], // UTC-9, UTC-10 - 7 AM local time
-       19: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // UTC+5:30, UTC+5 - 7 AM local time (Indian timezones)
-       20: ['America/Los_Angeles', 'America/Vancouver'], // UTC-8 - 7 AM local time
+       19: [], // Empty - no timezones for UTC hour 19
+       20: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // UTC+5:30, UTC+5 - 7 AM local time (Indian timezones)
        21: ['Pacific/Auckland', 'Pacific/Fiji'], // UTC+12, UTC+13 (next day) - 7 AM local time
        22: ['Asia/Kamchatka', 'Pacific/Majuro'], // UTC+12 (next day) - 7 AM local time
        23: ['Asia/Vladivostok', 'Asia/Magadan'], // UTC+11 (next day) - 7 AM local time
@@ -188,7 +188,7 @@ export async function GET(request: Request) {
         const timezoneOffset = getTimezoneOffset(timezone);
         
         // Use currentHour to determine the date boundaries
-        // currentHour = 19 means we're at UTC hour 19, so we need to calculate boundaries
+        // currentHour = 20 means we're at UTC hour 20, so we need to calculate boundaries
         // for the timezone's local day at that UTC time
         const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0) - (timezoneOffset * 60 * 60 * 1000) + 24 * 60 * 60 * 1000);
         const tomorrowStartUTC = new Date(todayStartUTC.getTime() + 24 * 60 * 60 * 1000);

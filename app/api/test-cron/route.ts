@@ -94,8 +94,8 @@ export async function GET(request: Request) {
     // Get current UTC time to determine which timezone group to process
     const now = new Date();
     //const currentHour = now.getUTCHours();  //change this to test
-    const currentHour = 19;
-    //currentHour = 19;
+    const currentHour = 20;
+    //currentHour = 20;
     
     console.log(`🔍 Test running at UTC hour: ${currentHour}`);
     console.log(`📅 Current UTC time: ${now.toISOString()}`);
@@ -121,8 +121,8 @@ export async function GET(request: Request) {
       16: ['America/Chicago', 'America/Mexico_City'],
       17: ['America/Denver', 'America/Edmonton'],
       18: ['America/Anchorage', 'Pacific/Honolulu'],
-      19: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // Indian timezones at UTC hour 19
-      20: ['America/Los_Angeles', 'America/Vancouver'],
+      19: [], // Empty - no timezones for UTC hour 19
+      20: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // Indian timezones at UTC hour 20
       21: ['Pacific/Auckland', 'Pacific/Fiji'],
       22: ['Asia/Kamchatka', 'Pacific/Majuro'],
       23: ['Asia/Vladivostok', 'Asia/Magadan'],
@@ -207,7 +207,7 @@ export async function GET(request: Request) {
         const timezoneOffset = getTimezoneOffset(timezone);
         
         // Use currentHour to determine the date boundaries
-        // currentHour = 19 means we're at UTC hour 19, so we need to calculate boundaries
+        // currentHour = 20 means we're at UTC hour 20, so we need to calculate boundaries
         // for the timezone's local day at that UTC time
         const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0) - (timezoneOffset * 60 * 60 * 1000) + 24 * 60 * 60 * 1000);
         const tomorrowStartUTC = new Date(todayStartUTC.getTime() + 24 * 60 * 60 * 1000);
