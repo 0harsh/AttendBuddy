@@ -12,6 +12,57 @@ type UserWithTimezone = {
   timezone: string;
 };
 
+// Helper function to get timezone offset in hours
+function getTimezoneOffset(timezone: string): number {
+  const offsets: Record<string, number> = {
+    'Asia/Kolkata': 5.5,      // UTC+5:30
+    'Asia/Colombo': 5.5,      // UTC+5:30
+    'Asia/Kathmandu': 5.75,   // UTC+5:45
+    'Asia/Tashkent': 5,       // UTC+5
+    'Asia/Dubai': 4,          // UTC+4
+    'Europe/Moscow': 3,       // UTC+3
+    'Europe/Athens': 2,       // UTC+2
+    'Europe/Berlin': 1,       // UTC+1
+    'Europe/Paris': 1,        // UTC+1
+    'Europe/Rome': 1,         // UTC+1
+    'Europe/London': 0,       // UTC+0
+    'Europe/Dublin': 0,       // UTC+0
+    'America/Sao_Paulo': -3,  // UTC-3
+    'America/New_York': -5,   // UTC-5
+    'America/Toronto': -5,    // UTC-5
+    'America/Chicago': -6,    // UTC-6
+    'America/Mexico_City': -6, // UTC-6
+    'America/Denver': -7,     // UTC-7
+    'America/Edmonton': -7,   // UTC-7
+    'America/Anchorage': -9,  // UTC-9
+    'America/Los_Angeles': -8, // UTC-8
+    'America/Vancouver': -8,  // UTC-8
+    'Pacific/Honolulu': -10,  // UTC-10
+    'Pacific/Auckland': 12,   // UTC+12
+    'Pacific/Fiji': 13,       // UTC+13
+    'Asia/Kamchatka': 12,     // UTC+12
+    'Pacific/Majuro': 12,     // UTC+12
+    'Asia/Vladivostok': 11,   // UTC+11
+    'Asia/Magadan': 11,       // UTC+11
+    'Asia/Sakhalin': 11,      // UTC+11
+    'Asia/Ust-Nera': 11,      // UTC+11
+    'Asia/Tokyo': 9,          // UTC+9
+    'Asia/Seoul': 9,          // UTC+9
+    'Asia/Pyongyang': 9,      // UTC+9
+    'Asia/Shanghai': 8,       // UTC+8
+    'Asia/Hong_Kong': 8,      // UTC+8
+    'Asia/Singapore': 8,      // UTC+8
+    'Asia/Bangkok': 7,        // UTC+7
+    'Asia/Ho_Chi_Minh': 7,    // UTC+7
+    'Asia/Jakarta': 7,        // UTC+7
+    'Asia/Almaty': 6,         // UTC+6
+    'Asia/Dhaka': 6,          // UTC+6
+    'Asia/Omsk': 6,           // UTC+6
+  };
+  
+  return offsets[timezone] || 0;
+}
+
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -133,26 +184,27 @@ export async function GET(request: Request) {
           continue;
         }
 
-        // Get current date in this timezone
-        const timezoneDate = new Date().toLocaleString('en-US', { timeZone: timezone });
-        const localDate = new Date(timezoneDate);
+        // Calculate UTC boundaries for this timezone using currentHour and offset
+        const timezoneOffset = getTimezoneOffset(timezone);
         
-        // Calculate "today" boundaries in this timezone
-        const todayStart = new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate());
-        const tomorrowStart = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+        // Use currentHour to determine the date boundaries
+        // currentHour = 19 means we're at UTC hour 19, so we need to calculate boundaries
+        // for the timezone's local day at that UTC time
+        const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), currentHour, 0, 0) - (timezoneOffset * 60 * 60 * 1000));
+        const tomorrowStartUTC = new Date(todayStartUTC.getTime() + 24 * 60 * 60 * 1000);
         
-        console.log(`   📅 Local date in ${timezone}: ${localDate.toLocaleDateString()}`);
-        console.log(`   🌅 Today start (local): ${todayStart.toISOString()}`);
-        console.log(`   🌅 Tomorrow start (local): ${tomorrowStart.toISOString()}`);
+        console.log(`   🌍 UTC boundaries for ${timezone} (UTC${timezoneOffset >= 0 ? '+' : ''}${timezoneOffset}):`);
+        console.log(`   🌅 Today start (UTC): ${todayStartUTC.toISOString()}`);
+        console.log(`   🌅 Tomorrow start (UTC): ${tomorrowStartUTC.toISOString()}`);
 
-        // Find reminders for today in this timezone
+        // Find reminders for today in this timezone using UTC boundaries
         const userIds = users.map(u => u.id);
         const todaysReminders = await prisma.reminder.findMany({
           where: {
             userId: { in: userIds },
             reminderDate: {
-              gte: todayStart,
-              lt: tomorrowStart,
+              gte: todayStartUTC,      // UTC boundary
+              lt: tomorrowStartUTC,    // UTC boundary
             },
           },
           include: { user: true, course: true },
