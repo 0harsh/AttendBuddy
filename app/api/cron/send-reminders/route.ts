@@ -42,27 +42,44 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Sets time to 00:00:00
+    // Get today's date in a simple, reliable way
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    console.log(`🔍 Looking for reminders between ${today.toISOString()} and ${tomorrow.toISOString()}`);
+    console.log(`🔍 Looking for reminders for today: ${today.toISOString()}`);
+    console.log(`📅 Current server time: ${now.toISOString()}`);
+    console.log(`📅 Today start: ${today.toISOString()}`);
+    console.log(`📅 Tomorrow start: ${tomorrow.toISOString()}`);
 
-    const reminders = await prisma.reminder.findMany({
+    // Get reminders that fall within today's range
+    const todaysReminders = await prisma.reminder.findMany({
       where: {
-        reminderDate: { gte: today, lt: tomorrow },
+        reminderDate: {
+          gte: today,
+          lt: tomorrow,
+        },
       },
       include: { user: true, course: true },
     });
 
-    console.log(`📅 Found ${reminders.length} reminders for today`);
+    console.log(`📅 Found ${todaysReminders.length} reminders for today`);
+    
+    // Log all reminders for debugging
+    if (todaysReminders.length > 0) {
+      console.log('📋 Today\'s reminders:');
+      todaysReminders.forEach(r => {
+        const reminderDate = new Date(r.reminderDate);
+        console.log(`  - ${r.course.name}: ${reminderDate.toISOString()} (${reminderDate.toLocaleDateString()})`);
+      });
+    }
 
-    if (reminders.length === 0) {
+    if (todaysReminders.length === 0) {
       return NextResponse.json({ message: 'No reminders to send today.' });
     }
 
-    const remindersByUser = reminders.reduce<GroupedReminders>((acc, r) => {
+    const remindersByUser = todaysReminders.reduce<GroupedReminders>((acc, r) => {
       if (!acc[r.userId]) {
         acc[r.userId] = { user: r.user, reminders: [] };
       }
