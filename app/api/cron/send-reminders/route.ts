@@ -190,7 +190,7 @@ export async function GET(request: Request) {
         // Use currentHour to determine the date boundaries
         // currentHour = 19 means we're at UTC hour 19, so we need to calculate boundaries
         // for the timezone's local day at that UTC time
-        const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), currentHour, 0, 0) - (timezoneOffset * 60 * 60 * 1000));
+        const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0) - (timezoneOffset * 60 * 60 * 1000) + 24 * 60 * 60 * 1000);
         const tomorrowStartUTC = new Date(todayStartUTC.getTime() + 24 * 60 * 60 * 1000);
         
         console.log(`   🌍 UTC boundaries for ${timezone} (UTC${timezoneOffset >= 0 ? '+' : ''}${timezoneOffset}):`);
