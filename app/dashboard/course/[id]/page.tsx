@@ -228,7 +228,7 @@ export default function CourseDetailsPage() {
     yesterday.setDate(yesterday.getDate() - 1);
     today.setHours(0, 0, 0, 0);
     yesterday.setHours(0, 0, 0, 0);
-    return date > yesterday;
+    return date > today;
   }
 
   // check if attendance is already marked or not
