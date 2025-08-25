@@ -1,0 +1,8 @@
+Things to Do
+
+-improve CSS
+-Add Course Button
+-sticky Navbar
+
+
+-optimize the queries and operations....
