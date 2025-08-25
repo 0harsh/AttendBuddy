@@ -69,12 +69,12 @@ export default function TestCronPage() {
           </h1>
           
           <div className="mb-6">
-                         <p className="text-gray-600 mb-4">
-               This page allows you to test the cron API logic locally without deploying. 
-               It will simulate the reminder processing for the current UTC hour.
-               <br />
-               <strong>Note:</strong> Only users from the current timezone group will be processed.
-             </p>
+                                      <p className="text-gray-600 mb-4">
+                This page allows you to test the cron API logic locally without deploying. 
+                It will simulate the reminder processing for the current UTC hour.
+                <br />
+                <strong>Note:</strong> Only users from the current timezone group will be processed.
+              </p>
             
             <div className="flex gap-3">
               <button

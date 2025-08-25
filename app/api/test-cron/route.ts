@@ -42,7 +42,9 @@ export async function GET(request: Request) {
 
     // Get current UTC time to determine which timezone group to process
     const now = new Date();
-    const currentHour = now.getUTCHours();
+    //const currentHour = now.getUTCHours();  //change this to test
+    const currentHour = 19;
+    //currentHour = 19;
     
     console.log(`🔍 Test running at UTC hour: ${currentHour}`);
     console.log(`📅 Current UTC time: ${now.toISOString()}`);
@@ -57,19 +59,19 @@ export async function GET(request: Request) {
       5: ['Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Singapore'],
       6: ['Asia/Bangkok', 'Asia/Ho_Chi_Minh', 'Asia/Jakarta'],
       7: ['Asia/Almaty', 'Asia/Dhaka', 'Asia/Omsk'],
-      8: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'],
-      9: ['Asia/Tashkent', 'Asia/Yekaterinburg'],
-      10: ['Asia/Dubai', 'Asia/Baku', 'Asia/Tbilisi'],
-      11: ['Europe/Moscow', 'Europe/Volgograd'],
-      12: ['Europe/Athens', 'Europe/Bucharest', 'Europe/Helsinki'],
-      13: ['Europe/Berlin', 'Europe/Paris', 'Europe/Rome'],
-      14: ['Europe/London', 'Europe/Dublin'],
-      15: ['America/Sao_Paulo', 'America/Argentina/Buenos_Aires'],
-      16: ['America/New_York', 'America/Toronto'],
-      17: ['America/Chicago', 'America/Mexico_City'],
-      18: ['America/Denver', 'America/Edmonton'],
-      19: ['America/Los_Angeles', 'America/Vancouver'],
-      20: ['America/Anchorage', 'Pacific/Honolulu'],
+      8: ['Asia/Tashkent', 'Asia/Yekaterinburg'],
+      9: ['Asia/Dubai', 'Asia/Baku', 'Asia/Tbilisi'],
+      10: ['Europe/Moscow', 'Europe/Volgograd'],
+      11: ['Europe/Athens', 'Europe/Bucharest', 'Europe/Helsinki'],
+      12: ['Europe/Berlin', 'Europe/Paris', 'Europe/Rome'],
+      13: ['Europe/London', 'Europe/Dublin'],
+      14: ['America/Sao_Paulo', 'America/Argentina/Buenos_Aires'],
+      15: ['America/New_York', 'America/Toronto'],
+      16: ['America/Chicago', 'America/Mexico_City'],
+      17: ['America/Denver', 'America/Edmonton'],
+      18: ['America/Anchorage', 'Pacific/Honolulu'],
+      19: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // Indian timezones at UTC hour 19
+      20: ['America/Los_Angeles', 'America/Vancouver'],
       21: ['Pacific/Auckland', 'Pacific/Fiji'],
       22: ['Asia/Kamchatka', 'Pacific/Majuro'],
       23: ['Asia/Vladivostok', 'Asia/Magadan'],

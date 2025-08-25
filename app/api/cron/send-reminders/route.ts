@@ -57,34 +57,34 @@ export async function GET(request: Request) {
     console.log(`🔍 Cron job running at UTC hour: ${currentHour}`);
     console.log(`📅 Current UTC time: ${now.toISOString()}`);
 
-    // Define timezone groups - each hour corresponds to specific timezones
-    // This ensures users get emails at around 7 AM in their local timezone
-    const timezoneGroups = {
-      0: ['Pacific/Auckland', 'Pacific/Fiji'], // UTC+12, UTC+13 - 7 AM local time
-      1: ['Asia/Kamchatka', 'Pacific/Majuro'], // UTC+12 - 7 AM local time
-      2: ['Asia/Vladivostok', 'Asia/Magadan'], // UTC+11 - 7 AM local time
-      3: ['Asia/Sakhalin', 'Asia/Ust-Nera'], // UTC+11 - 7 AM local time
-      4: ['Asia/Tokyo', 'Asia/Seoul', 'Asia/Pyongyang'], // UTC+9 - 7 AM local time
-      5: ['Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Singapore'], // UTC+8 - 7 AM local time
-      6: ['Asia/Bangkok', 'Asia/Ho_Chi_Minh', 'Asia/Jakarta'], // UTC+7 - 7 AM local time
-      7: ['Asia/Almaty', 'Asia/Dhaka', 'Asia/Omsk'], // UTC+6 - 7 AM local time
-      8: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // UTC+5:30, UTC+5 - 7 AM local time
-      9: ['Asia/Tashkent', 'Asia/Yekaterinburg'], // UTC+5 - 7 AM local time
-      10: ['Asia/Dubai', 'Asia/Baku', 'Asia/Tbilisi'], // UTC+4 - 7 AM local time
-      11: ['Europe/Moscow', 'Europe/Volgograd'], // UTC+3 - 7 AM local time
-      12: ['Europe/Athens', 'Europe/Bucharest', 'Europe/Helsinki'], // UTC+2 - 7 AM local time
-      13: ['Europe/Berlin', 'Europe/Paris', 'Europe/Rome'], // UTC+1 - 7 AM local time
-      14: ['Europe/London', 'Europe/Dublin'], // UTC+0 - 7 AM local time
-      15: ['America/Sao_Paulo', 'America/Argentina/Buenos_Aires'], // UTC-3 - 7 AM local time
-      16: ['America/New_York', 'America/Toronto'], // UTC-5 - 7 AM local time
-      17: ['America/Chicago', 'America/Mexico_City'], // UTC-6 - 7 AM local time
-      18: ['America/Denver', 'America/Edmonton'], // UTC-7 - 7 AM local time
-      19: ['America/Los_Angeles', 'America/Vancouver'], // UTC-8 - 7 AM local time
-      20: ['America/Anchorage', 'Pacific/Honolulu'], // UTC-9, UTC-10 - 7 AM local time
-      21: ['Pacific/Auckland', 'Pacific/Fiji'], // UTC+12, UTC+13 (next day) - 7 AM local time
-      22: ['Asia/Kamchatka', 'Pacific/Majuro'], // UTC+12 (next day) - 7 AM local time
-      23: ['Asia/Vladivostok', 'Asia/Magadan'], // UTC+11 (next day) - 7 AM local time
-    };
+         // Define timezone groups - each hour corresponds to specific timezones
+     // This ensures users get emails at around 7 AM in their local timezone
+     const timezoneGroups = {
+       0: ['Pacific/Auckland', 'Pacific/Fiji'], // UTC+12, UTC+13 - 7 AM local time
+       1: ['Asia/Kamchatka', 'Pacific/Majuro'], // UTC+12 - 7 AM local time
+       2: ['Asia/Vladivostok', 'Asia/Magadan'], // UTC+11 - 7 AM local time
+       3: ['Asia/Sakhalin', 'Asia/Ust-Nera'], // UTC+11 - 7 AM local time
+       4: ['Asia/Tokyo', 'Asia/Seoul', 'Asia/Pyongyang'], // UTC+9 - 7 AM local time
+       5: ['Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Singapore'], // UTC+8 - 7 AM local time
+       6: ['Asia/Bangkok', 'Asia/Ho_Chi_Minh', 'Asia/Jakarta'], // UTC+7 - 7 AM local time
+       7: ['Asia/Almaty', 'Asia/Dhaka', 'Asia/Omsk'], // UTC+6 - 7 AM local time
+       8: ['Asia/Tashkent', 'Asia/Yekaterinburg'], // UTC+5 - 7 AM local time
+       9: ['Asia/Dubai', 'Asia/Baku', 'Asia/Tbilisi'], // UTC+4 - 7 AM local time
+       10: ['Europe/Moscow', 'Europe/Volgograd'], // UTC+3 - 7 AM local time
+       11: ['Europe/Athens', 'Europe/Bucharest', 'Europe/Helsinki'], // UTC+2 - 7 AM local time
+       12: ['Europe/Berlin', 'Europe/Paris', 'Europe/Rome'], // UTC+1 - 7 AM local time
+       13: ['Europe/London', 'Europe/Dublin'], // UTC+0 - 7 AM local time
+       14: ['America/Sao_Paulo', 'America/Argentina/Buenos_Aires'], // UTC-3 - 7 AM local time
+       15: ['America/New_York', 'America/Toronto'], // UTC-5 - 7 AM local time
+       16: ['America/Chicago', 'America/Mexico_City'], // UTC-6 - 7 AM local time
+       17: ['America/Denver', 'America/Edmonton'], // UTC-7 - 7 AM local time
+       18: ['America/Anchorage', 'Pacific/Honolulu'], // UTC-9, UTC-10 - 7 AM local time
+       19: ['Asia/Kolkata', 'Asia/Colombo', 'Asia/Kathmandu'], // UTC+5:30, UTC+5 - 7 AM local time (Indian timezones)
+       20: ['America/Los_Angeles', 'America/Vancouver'], // UTC-8 - 7 AM local time
+       21: ['Pacific/Auckland', 'Pacific/Fiji'], // UTC+12, UTC+13 (next day) - 7 AM local time
+       22: ['Asia/Kamchatka', 'Pacific/Majuro'], // UTC+12 (next day) - 7 AM local time
+       23: ['Asia/Vladivostok', 'Asia/Magadan'], // UTC+11 (next day) - 7 AM local time
+     };
 
     // Get timezones for current hour
     const currentTimezones = timezoneGroups[currentHour as keyof typeof timezoneGroups] || [];
