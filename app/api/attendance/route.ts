@@ -45,7 +45,25 @@ export async function POST(req: Request) {
     }
 
     const userId = userPayload.userId;
-    const attendanceDate = new Date(date);
+    
+    // Convert the incoming date to UTC to ensure consistent storage
+    const dateObj = new Date(date);
+    
+    // Create a date at midnight UTC for the selected date
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth();
+    const day = dateObj.getDate();
+    const attendanceDate = new Date(Date.UTC(year, month, day));
+    
+    console.log('=== ATTENDANCE TIMEZONE DEBUG ===');
+    console.log('Received Date:', date);
+    console.log('Parsed Date Object:', dateObj.toISOString());
+    console.log('Local Date String:', dateObj.toLocaleDateString('en-IN'));
+    console.log('Year/Month/Day:', `${year}/${month + 1}/${day}`);
+    console.log('UTC Date for Storage:', attendanceDate.toISOString());
+    console.log('UTC Date Timestamp:', attendanceDate.getTime());
+    console.log('UTC Date Local Display:', attendanceDate.toString());
+    console.log('====================================');
 
     // Check if attendance already exists
     const existingAttendance = await prisma.attendance.findUnique({
@@ -102,9 +120,9 @@ export async function POST(req: Request) {
             where: { id: courseId },
             data: {
               ...(status === "Present" && { presents: { increment: 1 } }),
+              ...(status !== "Present" && { presents: { decrement: 1 } }),
               ...(status === "Absent" && { absents: { increment: 1 } }),
-              ...(existingAttendance.status === "Present" && status !== "Present" && { presents: { decrement: 1 } }),
-              ...(existingAttendance.status === "Absent" && status !== "Absent" && { absents: { decrement: 1 } }),
+              ...(status !== "Absent" && { absents: { decrement: 1 } }),
             },
           }),
         ]);
@@ -191,7 +209,6 @@ export async function GET(req: Request) {
     );
   }
 }
-
 
 // ✅ Delete Attendance for a Course
 export async function DELETE(req: Request) {

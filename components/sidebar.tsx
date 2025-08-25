@@ -12,6 +12,7 @@ const navItems = [
   { label: "Quick Attendance", icon: "✅", href: "/dashboard/QuickAttendance", type: "quick" },
   { label: "Search Attendance", icon: "🔍", href: "/dashboard/searchAttendance", type: "search" },
   { label: "About Us", icon: "ℹ️", href: "/dashboard/about", type: "link" },
+  { label: "Settings", icon: "⚙️", href: "/dashboard/settings", type: "link" },
 ];
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {

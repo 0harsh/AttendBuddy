@@ -12,7 +12,7 @@ model User {
   name        String
   email       String       @unique
   password    String
-
+  timezone    String       @default("Asia/Kolkata") // Store timezone like "Asia/Kolkata", "America/New_York", etc.
 
   courses     Course[]     @relation("UserCourses")
   attendances Attendance[] @relation("UserAttendances")
@@ -57,7 +57,7 @@ model Reminder {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   userId       String   @db.ObjectId
   courseId     String   @db.ObjectId
-  reminderDate DateTime
+  reminderDate DateTime // Store in UTC, will be converted to user's timezone during processing
   message      String?
 
   user   User   @relation("UserReminders", fields: [userId], references: [id])

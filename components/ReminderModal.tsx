@@ -5,6 +5,7 @@ interface ReminderModalProps {
   reminderLoading: boolean;
   reminderError: string;
   reminderSuccess: string;
+  userTimezone?: string;
   onMessageChange: (message: string) => void;
   onSetReminder: () => void;
   onClose: () => void;
@@ -17,6 +18,7 @@ export default function ReminderModal({
   reminderLoading,
   reminderError,
   reminderSuccess,
+  userTimezone,
   onMessageChange,
   onSetReminder,
   onClose,
@@ -32,6 +34,19 @@ export default function ReminderModal({
             {selectedDate?.toLocaleDateString("en-IN")}
           </span>
         </h2>
+        
+        {/* Timezone Context */}
+        {userTimezone && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-center text-sm text-blue-800">
+              <span className="font-medium">🌍 Timezone:</span> {userTimezone.split('/').pop()?.replace('_', ' ')}
+            </div>
+            <div className="text-center text-xs text-blue-600 mt-1">
+              Reminder will be processed based on your local time
+            </div>
+          </div>
+        )}
+        
         <div className="space-y-4">
           <input
             type="text"

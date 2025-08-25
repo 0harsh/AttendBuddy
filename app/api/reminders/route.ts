@@ -32,17 +32,47 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { courseId, reminderDate, message } = body;
+    console.log('Original Reminder Date:', reminderDate);
 
     if (!courseId || !reminderDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    console.log("reminderDate--- ", reminderDate);
+
+    // Store reminder date in UTC to avoid timezone issues
+    const dateObj = new Date(reminderDate);
+
+    console.log("dateObj--- ", dateObj);
+
+    
+    // The key insight: We need to create a date that represents midnight UTC
+    // for the selected date, regardless of the user's timezone
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth();
+    const date = dateObj.getDate();
+    
+    // Create a date at midnight UTC for the selected date
+    const utcDate = dateObj;
+
+    console.log("utcDate--- ", utcDate);
+    
+    console.log('=== TIMEZONE DEBUG ===');
+    console.log('Received Reminder Date:', reminderDate);
+    console.log('Parsed Date Object:', dateObj.toISOString());
+    console.log('Local Date String:', dateObj.toLocaleDateString('en-IN'));
+    console.log('Year/Month/Date:', `${year}/${month + 1}/${date}`);
+    console.log('UTC Date for Storage:', utcDate.toISOString());
+    console.log('UTC Date Timestamp:', utcDate.getTime());
+    console.log('UTC Date Local Display:', utcDate.toString());
+    console.log('====================================');
 
     // Check if reminder exists for this user, course, and date
     const existingReminder = await prisma.reminder.findFirst({
       where: {
         userId,
         courseId,
-        reminderDate: new Date(reminderDate),
+        reminderDate: utcDate,
       },
     });
 
@@ -59,13 +89,21 @@ export async function POST(request: NextRequest) {
         data: {
           userId,
           courseId,
-          reminderDate: new Date(reminderDate),
+          reminderDate: utcDate,
           message, // This can be optional
         },
       });
     }
 
-    return NextResponse.json({ message: 'Reminder set successfully!', reminder }, { status: 201 });
+    return NextResponse.json({ 
+      message: 'Reminder set successfully!', 
+      reminder,
+      dateInfo: {
+        original: reminderDate,
+        utcStored: utcDate.toISOString(),
+        localDate: dateObj.toLocaleDateString('en-IN'),
+      }
+    }, { status: 201 });
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') { // Prisma's unique constraint violation code
       return NextResponse.json({ error: 'A reminder for this class on this date already exists.' }, { status: 409 });

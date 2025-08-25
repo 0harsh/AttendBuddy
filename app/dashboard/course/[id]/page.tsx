@@ -28,6 +28,40 @@ export default function CourseDetailsPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [attendanceMessage, setAttendanceMessage] = useState("");
   const [attendanceMessageType, setAttendanceMessageType] = useState<"success" | "error">("success");
+  const [userProfile, setUserProfile] = useState<{ timezone: string } | null>(null);
+  const [currentTime, setCurrentTime] = useState<string>("");
+
+  // Fetch user profile for timezone
+  useEffect(() => {
+    async function fetchUserProfile() {
+      try {
+        const res = await fetch("/api/user/profile");
+        if (res.ok) {
+          const data = await res.json();
+          setUserProfile(data.user);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    }
+    fetchUserProfile();
+  }, []);
+
+  // Update current time in user's timezone
+  useEffect(() => {
+    if (userProfile?.timezone) {
+      const interval = setInterval(() => {
+        const time = new Date().toLocaleString('en-US', { 
+          timeZone: userProfile.timezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        setCurrentTime(time);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [userProfile?.timezone]);
 
   // Fetch attendance
   useEffect(() => {
@@ -94,6 +128,7 @@ export default function CourseDetailsPage() {
 
   // When user clicks a date
   function handleDateClick(date: Date) {
+    console.log("date you clicked on---", date);
     setSelectedDate(date);
     setShowMenu(true);
   }
@@ -189,11 +224,11 @@ export default function CourseDetailsPage() {
   function isFutureDate(date: Date | null) {
     if (!date) return false;
     const today = new Date();
-    //const yesterday = new Date();
-    //yesterday.setDate(yesterday.getDate() - 1);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
     today.setHours(0, 0, 0, 0);
-    //yesterday.setHours(0, 0, 0, 0);
-    return date > today;
+    yesterday.setHours(0, 0, 0, 0);
+    return date > yesterday;
   }
 
   // check if attendance is already marked or not
@@ -237,12 +272,28 @@ export default function CourseDetailsPage() {
     setReminderError("");
     setReminderSuccess("");
     try {
+      if (!selectedDate) {
+        throw new Error("No date selected");
+      }
+
+      console.log("selectedDate--- ", selectedDate);
+      console.log("selectedDate--- ", selectedDate.toISOString());
+
+      // Send the ISO string directly to the API
+      const reminderDateISO = selectedDate.toISOString();
+      
+      console.log('=== CLIENT SIDE TIMEZONE DEBUG ===');
+      console.log('Original selectedDate:', selectedDate.toISOString());
+      console.log('Local Date String:', selectedDate.toLocaleDateString('en-IN'));
+      console.log('ISO String for API:', reminderDateISO);
+      console.log('==================================');
+
       const res = await fetch("/api/reminders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseId: id,
-          reminderDate: selectedDate,
+          reminderDate: reminderDateISO, // Send ISO string to API
           message: reminderMessage,
         }),
       });
@@ -314,6 +365,21 @@ export default function CourseDetailsPage() {
       <div className="max-w-2xl mx-auto">
         <CourseHeader courseName={name} />
         
+        {/* Timezone Indicator */}
+        {userProfile?.timezone && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center animate-fade-in">
+            <div className="flex items-center justify-center gap-2 text-blue-800">
+              <span className="text-lg">🌍</span>
+              <span className="font-medium">Your Timezone:</span>
+              <span className="font-mono">{userProfile.timezone.split('/').pop()?.replace('_', ' ')}</span>
+              <span className="text-sm text-blue-600">({currentTime})</span>
+            </div>
+            <p className="text-sm text-blue-600 mt-1">
+              Reminders will be sent based on your local timezone
+            </p>
+          </div>
+        )}
+        
         {/* Attendance Feedback Message */}
         {attendanceMessage && (
           <div className={`mb-4 p-3 rounded-lg text-center animate-fade-in ${
@@ -340,6 +406,7 @@ export default function CourseDetailsPage() {
           isFutureDate={isFutureDate(selectedDate)}
           isAttendanceMarked={isAttendanceMarked(selectedDate)}
           reminderExists={isReminderExists(selectedDate)}
+          userTimezone={userProfile?.timezone}
           onMarkAttendance={markAttendance}
           onDeleteAttendance={deleteAttendance}
           onSetReminder={() => {
@@ -357,6 +424,7 @@ export default function CourseDetailsPage() {
           reminderLoading={reminderLoading}
           reminderError={reminderError}
           reminderSuccess={reminderSuccess}
+          userTimezone={userProfile?.timezone}
           onMessageChange={setReminderMessage}
           onSetReminder={handleSetReminder}
           onClose={() => {

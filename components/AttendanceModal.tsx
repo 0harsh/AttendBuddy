@@ -6,6 +6,7 @@ interface AttendanceModalProps {
   isFutureDate: boolean;
   isAttendanceMarked: boolean;
   reminderExists: boolean;
+  userTimezone?: string;
   onMarkAttendance: (status: "Present" | "Absent") => void;
   onDeleteAttendance: () => void;
   onSetReminder: () => void;
@@ -19,6 +20,7 @@ export default function AttendanceModal({
   isFutureDate,
   isAttendanceMarked,
   reminderExists,
+  userTimezone,
   onMarkAttendance,
   onDeleteAttendance,
   onSetReminder,
@@ -35,6 +37,19 @@ export default function AttendanceModal({
             {selectedDate?.toLocaleDateString("en-IN")}
           </span>
         </h2>
+        
+        {/* Timezone Context */}
+        {userTimezone && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-center text-sm text-blue-800">
+              <span className="font-medium">🌍 Timezone:</span> {userTimezone.split('/').pop()?.replace('_', ' ')}
+            </div>
+            <div className="text-center text-xs text-blue-600 mt-1">
+              All dates are processed in your local timezone
+            </div>
+          </div>
+        )}
+        
         <div className="space-y-3">
           {!isFutureDate && !isAttendanceMarked && (
             <button
